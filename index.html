@@ -2289,47 +2289,44 @@
                 });
             }
 
-            // file 프로토콜 및 SDK 검색 에러 대응을 위한 통합 검색 함수 (REST API fallback)
+            // file 프로토콜 및 SDK 검색 에러 대응을 위한 통합 검색 함수 (REST API)
             function kakaoSearch(keyword, bounds, callback) {
-                if (window.location.protocol === 'file:') {
-                    let url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(keyword)}`;
-                    if (bounds) {
-                        const sw = bounds.getSouthWest();
-                        const ne = bounds.getNorthEast();
-                        url += `&rect=${sw.getLng()},${sw.getLat()},${ne.getLng()},${ne.getLat()}`;
-                    }
-
-                    fetch(url, {
-                        headers: {
-                            'Authorization': `KakaoAK ${REST_API_KEY}`
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(resData => {
-                        const documents = resData.documents || [];
-                        if (documents.length > 0) {
-                            callback(documents, kakao.maps.services.Status.OK);
-                        } else {
-                            callback([], kakao.maps.services.Status.ZERO_RESULT);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('REST API Fallback Search Error:', err);
-                        callback([], kakao.maps.services.Status.ERROR);
-                    });
-                } else {
-                    if (!mapPs) {
-                        callback([], kakao.maps.services.Status.ERROR);
-                        return;
-                    }
-                    const options = bounds ? { bounds: bounds } : {};
-                    mapPs.keywordSearch(keyword, (data, status) => {
-                        callback(data, status);
-                    }, options);
+                let url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(keyword)}`;
+                if (bounds) {
+                    const sw = bounds.getSouthWest();
+                    const ne = bounds.getNorthEast();
+                    url += `&rect=${sw.getLng()},${sw.getLat()},${ne.getLng()},${ne.getLat()}`;
                 }
+
+                fetch(url, {
+                    headers: {
+                        'Authorization': `KakaoAK ${REST_API_KEY}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(resData => {
+                    const documents = resData.documents || [];
+                    if (documents.length > 0) {
+                        callback(documents, kakao.maps.services.Status.OK);
+                    } else {
+                        callback([], kakao.maps.services.Status.ZERO_RESULT);
+                    }
+                })
+                .catch(err => {
+                    console.error('REST API Search Error, trying SDK backup:', err);
+                    // REST API 실패 시 SDK Places 백업 작동
+                    if (mapPs) {
+                        const options = bounds ? { bounds: bounds } : {};
+                        mapPs.keywordSearch(keyword, (data, status) => {
+                            callback(data, status);
+                        }, options);
+                    } else {
+                        callback([], kakao.maps.services.Status.ERROR);
+                    }
+                });
             }
 
             function renderGymListAndMarkers(data) {
