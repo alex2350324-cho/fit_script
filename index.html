@@ -1973,87 +1973,105 @@
                 }
                 bmr = Math.round(bmr);
 
-                // 2. 활동대사량 (TDEE) 계산
-                let activityFactor = 1.2;
-                if (data.frequency === 2) activityFactor = 1.375;
-                else if (data.frequency === 3) activityFactor = 1.55;
-                else if (data.frequency === 4) activityFactor = 1.55;
-                else if (data.frequency >= 5) activityFactor = 1.725;
+                // 2. 활동대사량 (TDEE) 계산 - 전체적인 오차를 줄이고 과대평가를 방지하기 위해 현실적으로 하향 조정
+                let activityFactor = 1.10; // 기본 (활동량 적음)
+                if (data.frequency === 2) activityFactor = 1.20;      // 주 2회 운동
+                else if (data.frequency === 3) activityFactor = 1.28; // 주 3회 운동
+                else if (data.frequency === 4) activityFactor = 1.33; // 주 4회 운동
+                else if (data.frequency >= 5) activityFactor = 1.40;  // 주 5회 이상
 
                 const tdee = Math.round(bmr * activityFactor);
 
-                // 3. 목표 섭취 칼로리 (Target Calories) 도출
+                // 3. 목표 섭취 칼로리 (Target Calories) 도출 - 탄수화물과 지방 위주로 에너지를 줄여 현실적 식단 유도
                 let targetCal = tdee;
                 let goalSubtext = '';
 
                 if (data.goal === 'diet') {
-                    targetCal = tdee - 500;
+                    // 다이어트: TDEE 대비 600kcal 감량 (BMR 이하 보호)
+                    targetCal = tdee - 600;
                     if (targetCal < bmr) {
                         targetCal = bmr;
                         goalSubtext = `체지방 소모를 극대화하되, 건강을 지키는 최소 에너지원인 <strong>기초대사량(BMR)</strong> 수준에 맞췄습니다.`;
                     } else {
-                        goalSubtext = `일일 소비 에너지(TDEE) 대비 <strong>500kcal 적자</strong>를 유도하여 건강하게 체지방을 연소하는 식단입니다.`;
+                        goalSubtext = `일일 소비 에너지(TDEE) 대비 <strong>600kcal 적자</strong>를 유도하여 건강하게 체지방을 연소하는 식단입니다.`;
                     }
                 } else if (data.goal === 'strength') {
-                    targetCal = tdee + 300;
-                    goalSubtext = `근육 합성 및 체중 벌크업 효율을 극대화하기 위해 일일 에너지 대비 <strong>300kcal 초과</strong> 섭취를 지향합니다.`;
+                    // 벌크업: 지방 과다 축적을 제한하여 150kcal 초과로 재설정 (린매스업 지향)
+                    targetCal = tdee + 150;
+                    goalSubtext = `체지방 증가를 최소화하면서 근육 합성 효율을 증가시키기 위해 일일 에너지 대비 약 <strong>150kcal 초과</strong> 섭취를 지향합니다.`;
                 } else {
-                    targetCal = tdee;
-                    goalSubtext = `체중 증감 없이 생체 밸런스를 유지하고 컨디션을 최상으로 관리하는 <strong>항상성 유지</strong> 식단입니다.`;
+                    // 건강유지: 현대인의 좌식 생활을 감안하여 TDEE 대비 200kcal 감량
+                    targetCal = tdee - 200;
+                    goalSubtext = `체중 증감 없이 생체 밸런스를 유지하고 컨디션을 최상으로 관리하는 <strong>항상성 유지 및 대사 안정화</strong> 식단입니다.`;
                 }
                 targetCal = Math.round(targetCal);
 
-                // 4. 운동 목표별 탄단지 구성 비율 (Macros Ratio)
-                let carbsPct = 50;
-                let proteinPct = 20;
-                let fatPct = 30;
+                // 4. 영양학적 순차적 영양소 배분 알고리즘
+                // [신장 안전 장치] 일일 단백질 권장량 결정 (체중 1kg당 g수)
+                const maxProteinG = Math.round(weight * 2.0);
+                let proteinG = 0;
+                let isProteinCapped = false;
 
                 if (data.goal === 'diet') {
-                    carbsPct = 40;
-                    proteinPct = 35;
-                    fatPct = 25;
+                    proteinG = Math.round(weight * 1.8);
                 } else if (data.goal === 'strength') {
-                    carbsPct = 50;
-                    proteinPct = 30;
-                    fatPct = 20;
+                    proteinG = Math.round(weight * 2.0);
+                } else {
+                    proteinG = Math.round(weight * 1.5);
                 }
 
-                // 5. 탄단지 권장 그람(g) 수 계산 (탄/단 1g = 4kcal, 지 1g = 9kcal)
-                let carbsG = Math.round((targetCal * (carbsPct / 100)) / 4);
-                let proteinG = Math.round((targetCal * (proteinPct / 100)) / 4);
-                let fatG = Math.round((targetCal * (fatPct / 100)) / 9);
-
-                // [신장 안전 장치] 일일 단백질 섭취량을 체중(kg)의 최대 2배(g)로 제한
-                const maxProteinG = Math.round(weight * 2.0);
-                let isProteinCapped = false;
-                let excessProteinCal = 0;
-
+                // 단백질 권장량이 신장 안전 한계(체중 2배)를 초과하는 경우 캡핑
                 if (proteinG > maxProteinG) {
-                    const originalProteinG = proteinG;
                     proteinG = maxProteinG;
                     isProteinCapped = true;
-                    // 초과된 단백질 칼로리를 구하여 탄수화물로 완전 이관
-                    excessProteinCal = (originalProteinG - maxProteinG) * 4;
-                    const extraCarbsG = Math.round(excessProteinCal / 4);
-                    carbsG += extraCarbsG;
                 }
 
-                const carbsCal = Math.round(carbsG * 4);
-                const proteinCal = Math.round(proteinG * 4);
-                const fatCal = Math.round(fatG * 9);
+                // 단백질로 얻는 칼로리 계산
+                let proteinCal = proteinG * 4;
 
-                // 실제 재분배에 따라 새로운 탄단지 비율(%) 역산 및 보정
-                carbsPct = Math.round((carbsCal / targetCal) * 100);
-                proteinPct = Math.round((proteinCal / targetCal) * 100);
-                fatPct = 100 - carbsPct - proteinPct; // 합계가 100%가 되도록 보정
+                // 극단적 저칼로리 상황에서의 방어 코딩
+                // 만약 목표 칼로리가 너무 낮아 단백질 칼로리를 제외한 에너지가 건강한 생명활동을 지원하지 못할 경우
+                // 최소 탄수화물 100g (400kcal), 최소 지방 20g (180kcal) 보장
+                const minCarbsCal = 100 * 4;
+                const minFatCal = 20 * 9;
+                
+                if (targetCal - proteinCal < minCarbsCal + minFatCal) {
+                    // 단백질을 하향 조정하여 최소 탄/지 에너지 확보
+                    proteinCal = Math.max(0, targetCal - (minCarbsCal + minFatCal));
+                    proteinG = Math.round(proteinCal / 4);
+                }
 
-                // 단백질 한계 초과 시 알림 문구
+                // 잔여 칼로리 계산
+                const remainingCal = targetCal - proteinCal;
+
+                // 잔여 칼로리를 탄수화물과 지방에 분배
+                let carbsPctOfRemaining = 60; // 기본
+                if (data.goal === 'diet') {
+                    carbsPctOfRemaining = 60; // 탄 60% / 지 40%
+                } else if (data.goal === 'strength') {
+                    carbsPctOfRemaining = 65; // 탄 65% / 지 35%
+                } else {
+                    carbsPctOfRemaining = 55; // 탄 55% / 지 45%
+                }
+
+                const carbsCal = Math.round(remainingCal * (carbsPctOfRemaining / 100));
+                const fatCal = remainingCal - carbsCal;
+
+                let carbsG = Math.round(carbsCal / 4);
+                let fatG = Math.round(fatCal / 9);
+
+                // 최종 비율 역산 및 보정 (합계 100%가 되도록 조정)
+                let carbsPct = Math.round((carbsCal / targetCal) * 100);
+                let proteinPct = Math.round((proteinCal / targetCal) * 100);
+                let fatPct = 100 - carbsPct - proteinPct;
+
+                // 단백질 한계 초과/적용 시 알림 문구
                 let cappedAlertHtml = '';
-                if (isProteinCapped) {
+                if (isProteinCapped || (data.goal === 'strength' && proteinG === maxProteinG)) {
                     cappedAlertHtml = `
-                        <div style="background: rgba(218, 54, 51, 0.1); border: 1px solid var(--error); color: #ff6b6b; padding: 0.8rem 1rem; border-radius: 10px; margin-top: 1rem; font-size: 0.85rem; line-height: 1.4; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
-                            <i class="fas fa-circle-exclamation" style="font-size: 1.1rem;"></i>
-                            <span><strong>신장 건강 보호 안내:</strong> 일일 단백질 권장량이 신장 안전 제한치(체중의 2배인 ${maxProteinG}g)를 초과하여 상한선으로 조절되었습니다. 남는 에너지는 탄수화물(+${Math.round(excessProteinCal / 4)}g)로 안전하게 이관되었습니다.</span>
+                        <div style="background: rgba(0, 242, 255, 0.08); border: 1px solid var(--primary); color: var(--primary); padding: 0.8rem 1rem; border-radius: 10px; margin-top: 1rem; font-size: 0.85rem; line-height: 1.4; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                            <i class="fas fa-circle-info" style="font-size: 1.1rem;"></i>
+                            <span><strong>신장 안전 맞춤형 식단:</strong> 일일 단백질 섭취량이 안전 상한선(체중의 2배인 ${maxProteinG}g)으로 최적 조절되었습니다. 탄수화물과 지방의 섭취량을 이에 맞추어 동적으로 재조정하여 총 칼로리를 보수적으로 낮췄습니다.</span>
                         </div>
                     `;
                 }
