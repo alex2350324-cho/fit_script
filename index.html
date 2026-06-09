@@ -1,0 +1,2526 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fit Script - 맞춤형 운동 루틴 처방기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 카카오 지도 JavaScript API 연동 -->
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=a9a21435155798e0164a0345fca0f911&libraries=services"></script>
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --primary-dark: #00d1db;
+            --secondary: #7000ff;
+            --accent: #afff00;
+            --bg-dark: #0a0e14;
+            --card-bg: #161b22;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --success: #238636;
+            --error: #da3633;
+            --warning: #d29922;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));
+        }
+
+        .logo h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .step {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 2;
+            transition: var(--transition);
+            color: var(--text-muted);
+        }
+
+        .step.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--text-main);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            color: #000000;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        select option {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.2);
+        }
+
+        .checkbox-group {
+            margin-bottom: 2rem;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .checkbox-grid label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .checkbox-grid label:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .checkbox-grid input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .next-btn, .submit-btn {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .next-btn:hover, .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
+        }
+
+        .prev-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .prev-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .summary-card .label {
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .weekly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .day-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .day-header {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-header.rest {
+            color: var(--text-muted);
+        }
+
+        .exercise-list {
+            padding: 1rem;
+        }
+
+        .exercise-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .exercise-item:last-child {
+            border-bottom: none;
+        }
+
+        .exercise-item:hover {
+            color: var(--primary);
+            padding-left: 0.5rem;
+        }
+
+        .exercise-name {
+            font-weight: 500;
+        }
+
+        .exercise-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .exercise-info p {
+            margin-bottom: 1rem;
+        }
+
+        .tips {
+            background: rgba(175, 255, 0, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .tips strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .logo h1 {
+                font-size: 2rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        .supplement-container {
+            margin-top: 3rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .supplement-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .supplement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .supplement-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .supplement-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0.7;
+        }
+
+        .supplement-card.highlight {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(175, 255, 0, 0.2);
+            animation: pulseBorder 2s infinite;
+        }
+
+        .supplement-card.highlight::before {
+            background: var(--accent);
+        }
+
+        @keyframes pulseBorder {
+            0% { box-shadow: 0 0 10px rgba(175, 255, 0, 0.15); }
+            50% { box-shadow: 0 0 20px rgba(175, 255, 0, 0.4); }
+            100% { box-shadow: 0 0 10px rgba(175, 255, 0, 0.15); }
+        }
+
+        .supplement-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .supplement-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            background: rgba(0, 242, 255, 0.1);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .supplement-card.highlight .supplement-icon {
+            color: var(--accent);
+            background: rgba(175, 255, 0, 0.1);
+        }
+
+        .supplement-title-group h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .supplement-category {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .supplement-desc {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .supplement-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .supplement-timing {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .supplement-card.highlight .supplement-timing {
+            background: rgba(175, 255, 0, 0.15);
+            color: var(--accent);
+        }
+
+        .supplement-badge {
+            background: rgba(175, 255, 0, 0.2);
+            color: var(--accent);
+            padding: 0.2rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        /* 유산소 처방전 스타일 */
+        .cardio-container {
+            margin-top: 3rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .cardio-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .cardio-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .cardio-grid {
+                grid-template-columns: 1.2fr 1.8fr;
+            }
+        }
+
+        .cardio-status-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .cardio-necessity-title {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+        }
+
+        .cardio-necessity-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .cardio-necessity-value.very-high {
+            color: var(--error);
+            text-shadow: 0 0 10px rgba(218, 54, 51, 0.3);
+        }
+
+        .cardio-necessity-value.high {
+            color: var(--warning);
+            text-shadow: 0 0 10px rgba(210, 153, 34, 0.3);
+        }
+
+        .cardio-necessity-value.normal {
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(175, 255, 0, 0.3);
+        }
+
+        .cardio-necessity-stars {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        .cardio-gauge-bg {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .cardio-gauge-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .cardio-gauge-fill.very-high {
+            background: linear-gradient(90deg, var(--warning), var(--error));
+        }
+
+        .cardio-gauge-fill.high {
+            background: linear-gradient(90deg, var(--primary), var(--warning));
+        }
+
+        .cardio-gauge-fill.normal {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .cardio-recommendation-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .cardio-recommendation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 20px 0 0 20px;
+        }
+
+        .cardio-rec-header {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cardio-rec-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+            background: rgba(0, 242, 255, 0.1);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.15);
+        }
+
+        .cardio-rec-title-group h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+        }
+
+        .cardio-rec-subtitle {
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .cardio-rec-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .cardio-rec-desc {
+            font-size: 1rem;
+            color: #d1d5db;
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+        }
+
+        .cardio-info-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .cardio-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cardio-chip strong {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .cardio-chip.duration {
+            background: rgba(0, 242, 255, 0.08);
+            border-color: rgba(0, 242, 255, 0.3);
+        }
+
+        .cardio-chip.duration strong {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .cardio-rec-footer-tip {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .cardio-rec-footer-tip i {
+            color: var(--accent);
+            margin-top: 0.2rem;
+        }
+
+        /* 식단 처방전 스타일 */
+        .diet-container {
+            margin-top: 3rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .diet-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .diet-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .diet-summary-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 2rem;
+        }
+
+        .diet-cal-label {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .diet-cal-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-shadow: 0 0 15px rgba(175, 255, 0, 0.3);
+            margin-bottom: 0.5rem;
+        }
+
+        .diet-cal-subtext {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .diet-cal-subtext strong {
+            color: var(--primary);
+        }
+
+        /* 탄단지 멀티 프로그레스 바 */
+        .diet-macro-bar-container {
+            margin-bottom: 2.5rem;
+        }
+
+        .diet-macro-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+        }
+
+        .diet-macro-bar {
+            display: flex;
+            height: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .diet-macro-fill {
+            height: 100%;
+            transition: width 1s ease-in-out;
+        }
+
+        .diet-macro-fill.carbs {
+            background: #00f2ff; /* 탄수화물: Neon Blue */
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        .diet-macro-fill.protein {
+            background: #7000ff; /* 단백질: Neon Purple */
+            box-shadow: 0 0 10px rgba(112, 0, 255, 0.5);
+        }
+
+        .diet-macro-fill.fat {
+            background: #afff00; /* 지방: Neon Yellow */
+            box-shadow: 0 0 10px rgba(175, 255, 0, 0.5);
+        }
+
+        .diet-macro-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.carbs { background: #00f2ff; }
+        .legend-dot.protein { background: #7000ff; }
+        .legend-dot.fat { background: #afff00; }
+
+        /* 탄단지 세부 카드 그리드 */
+        .diet-macro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .macro-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .macro-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .macro-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .macro-card.carbs::before { background: #00f2ff; }
+        .macro-card.protein::before { background: #7000ff; }
+        .macro-card.fat::before { background: #afff00; }
+
+        .macro-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .macro-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .macro-card-pct {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+        }
+
+        .macro-card.carbs .macro-card-pct { background: rgba(0, 242, 255, 0.1); color: #00f2ff; }
+        .macro-card.protein .macro-card-pct { background: rgba(112, 0, 255, 0.1); color: #c499ff; }
+        .macro-card.fat .macro-card-pct { background: rgba(175, 255, 0, 0.1); color: #afff00; }
+
+        .macro-card-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+        }
+
+        .macro-card-cal {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
+
+        .macro-card-foods {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1rem;
+            flex-grow: 1;
+        }
+
+        .macro-food-title {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .macro-food-list {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            line-height: 1.5;
+            list-style-type: none;
+        }
+
+        .macro-food-list li {
+            position: relative;
+            padding-left: 0.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .macro-food-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--text-muted);
+        }
+
+        /* 카카오 지도 영역 스타일 */
+        .map-container {
+            margin-top: 3rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .map-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .map-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .map-search-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .map-search-input-group {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .map-search-input-group i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .map-search-input {
+            width: 100%;
+            padding-left: 3rem;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .map-search-btn {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .map-search-btn:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .map-content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .map-content-grid {
+                grid-template-columns: 1.8fr 1.2fr;
+            }
+        }
+
+        .map-display-wrapper {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #161b22;
+        }
+
+        #map {
+            width: 100%;
+            height: 450px;
+        }
+
+        .map-list-wrapper {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .map-list-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        .map-places-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .place-item-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .place-item-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--primary);
+            transform: translateX(3px);
+        }
+
+        .place-item-card.active {
+            background: rgba(0, 242, 255, 0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        .place-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .place-name span.place-index {
+            background: var(--primary);
+            color: var(--bg-dark);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .place-address {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .place-phone {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .map-no-results {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 3rem 0;
+            font-size: 0.95rem;
+        }
+
+        /* 커스텀 인포윈도우 스타일 */
+        .custom-overlay-content {
+            background: #161b22;
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            color: var(--text-main);
+            font-family: 'Noto Sans KR', sans-serif;
+            position: relative;
+            margin-bottom: 40px; /* 마커 위로 띄우기 */
+            min-width: 200px;
+        }
+
+        .custom-overlay-content::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: var(--primary) transparent;
+            display: block;
+            width: 0;
+        }
+
+        .custom-overlay-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .custom-overlay-addr {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .custom-overlay-tel {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-dumbbell"></i>
+                <h1>Fit Script</h1>
+            </div>
+            <p>당신만을 위한 안전하고 스마트한 운동 처방전</p>
+        </header>
+
+        <main id="app">
+            <section id="form-section" class="card">
+                <div class="step-indicator">
+                    <div class="step active" data-step="1">1. 기본 정보</div>
+                    <div class="step" data-step="2">2. 운동 목표</div>
+                    <div class="step" data-step="3">3. 건강 상태</div>
+                </div>
+
+                <form id="fit-form">
+                    <div class="form-step active" id="step-1">
+                        <h2>기본 정보를 입력해주세요</h2>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label for="age">나이</label>
+                                <input type="number" id="age" placeholder="예: 25" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="gender">성별</label>
+                                <select id="gender" required>
+                                    <option value="">선택</option>
+                                    <option value="male">남성</option>
+                                    <option value="female">여성</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="height">신장 (cm)</label>
+                                <input type="number" id="height" placeholder="예: 175" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="weight">체중 (kg)</label>
+                                <input type="number" id="weight" placeholder="예: 70" required>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn next-btn">다음 단계 <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-step" id="step-2">
+                        <h2>운동 계획을 알려주세요</h2>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label for="goal">운동 목표</label>
+                                <select id="goal" required>
+                                    <option value="strength">근력 증진</option>
+                                    <option value="diet">체중 감량</option>
+                                    <option value="health">건강 유지</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="frequency">주간 운동 빈도</label>
+                                <select id="frequency" required>
+                                    <option value="2">주 2회</option>
+                                    <option value="3">주 3회</option>
+                                    <option value="4">주 4회</option>
+                                    <option value="5">주 5회 이상</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="time">1회 운동 시간 (분)</label>
+                                <input type="number" id="time" placeholder="예: 60" value="60" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="equipment">보유 장비</label>
+                                <select id="equipment" required>
+                                    <option value="body">맨몸</option>
+                                    <option value="dumbbell">덤벨</option>
+                                    <option value="gym">헬스장 (바벨 포함)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn prev-btn"><i class="fas fa-arrow-left"></i> 이전</button>
+                            <button type="button" class="btn next-btn">다음 단계 <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-step" id="step-3">
+                        <h2>안전한 운동을 위한 건강 체크</h2>
+                        <div class="checkbox-group">
+                            <label>부상 및 통증 부위 (중복 선택 가능)</label>
+                            <div class="checkbox-grid">
+                                <label><input type="checkbox" name="injury" value="shoulder"> 어깨</label>
+                                <label><input type="checkbox" name="injury" value="back"> 허리</label>
+                                <label><input type="checkbox" name="injury" value="knee"> 무릎</label>
+                                <label><input type="checkbox" name="injury" value="wrist"> 손목/팔꿈치</label>
+                                <label><input type="checkbox" name="injury" value="none"> 해당 없음</label>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="condition">기저 질환 (고혈압, 당뇨 등)</label>
+                            <input type="text" id="condition" placeholder="없으면 비워두세요">
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn prev-btn"><i class="fas fa-arrow-left"></i> 이전</button>
+                            <button type="submit" class="btn submit-btn">루틴 처방받기 <i class="fas fa-magic"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <section id="result-section" class="card hidden">
+                <div class="result-header">
+                    <h2><i class="fas fa-clipboard-check"></i> 당신을 위한 맞춤 처방전</h2>
+                    <button id="reset-btn" class="btn btn-outline">다시 검사하기</button>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card" id="bmi-card">
+                        <h3>BMI 지수</h3>
+                        <div class="value" id="bmi-value">22.5</div>
+                        <div class="label" id="bmi-label">정상 체중</div>
+                    </div>
+                    <div class="summary-card" id="calorie-card">
+                        <h3>예상 칼로리 소모</h3>
+                        <div class="value" id="cal-value">450</div>
+                        <div class="label">kcal / 세션</div>
+                    </div>
+                    <div class="summary-card" id="safety-card">
+                        <h3>안전 등급</h3>
+                        <div class="value" id="safety-value">A</div>
+                        <div class="label" id="safety-label">안전한 운동 권장</div>
+                    </div>
+                </div>
+
+                <div class="routine-container">
+                    <h3><i class="fas fa-calendar-alt"></i> 주간 운동 스케줄</h3>
+                    <div id="weekly-routine" class="weekly-grid"></div>
+                </div>
+
+                <!-- 맞춤형 유산소 처방 섹션 -->
+                <div class="cardio-container">
+                    <h3><i class="fas fa-running"></i> 🏃 나만의 맞춤 유산소 처방전</h3>
+                    <div id="cardio-prescription" class="cardio-grid"></div>
+                </div>
+
+                <!-- 맞춤형 영양제 추천 섹션 -->
+                <div class="supplement-container">
+                    <h3><i class="fas fa-capsules"></i> 💊 나만의 맞춤 영양제 처방전</h3>
+                    <div id="supplement-list" class="supplement-grid"></div>
+                </div>
+
+                <!-- 맞춤형 식단 및 영양 처방 섹션 -->
+                <div class="diet-container">
+                    <h3><i class="fas fa-utensils"></i> 🍽️ 나만의 맞춤 영양 & 식단 가이드</h3>
+                    <div id="diet-prescription" class="diet-card"></div>
+                </div>
+
+                <!-- 주변 헬스장 찾기 섹션 (카카오 맵 연동) -->
+                <div class="map-container">
+                    <h3><i class="fas fa-map-location-dot"></i> 📍 내 주변 헬스장 위치 찾기</h3>
+                    <div class="map-card">
+                        <div class="map-search-row">
+                            <div class="map-search-input-group">
+                                <i class="fas fa-magnifying-glass"></i>
+                                <input type="text" id="map-search-keyword" class="map-search-input" placeholder="원하는 지역이나 동명을 입력해 주세요 (예: 역삼동, 마포구 등)">
+                            </div>
+                            <button type="button" id="map-search-submit" class="map-search-btn">
+                                <i class="fas fa-search"></i> 헬스장 검색
+                            </button>
+                        </div>
+                        <div class="map-content-grid">
+                            <div class="map-display-wrapper">
+                                <div id="map"></div>
+                            </div>
+                            <div class="map-list-wrapper">
+                                <div class="map-list-title">검색된 헬스장 목록</div>
+                                <div id="map-places-list" class="map-places-list">
+                                    <div class="map-no-results">지역을 검색하시면 주변 헬스장 정보가 이곳에 나타납니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons" style="margin-top: 3rem;">
+                    <button id="download-csv" class="btn btn-success">
+                        <i class="fas fa-file-csv"></i> 운동 기록 CSV 저장
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Fit Script. Powered by Antigravity Core.</p>
+        </footer>
+    </div>
+
+    <div id="exercise-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title">운동 이름</h2>
+            <div class="video-container" id="video-container"></div>
+            <div class="exercise-info">
+                <p id="modal-desc">운동 설명이 들어갑니다.</p>
+                <div class="tips">
+                    <strong>💡 안전 팁:</strong>
+                    <p id="modal-tip">부상 방지를 위한 팁입니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const EXERCISE_DB = [
+            { id: 1, name: '푸쉬업', category: '가슴', equipment: 'body', video: 'X0q9p6VqHqc', tips: '허리가 아래로 처지지 않게 코어에 힘을 주세요.', injuryAvoid: ['wrist'] },
+            { id: 2, name: '딥스', category: '가슴', equipment: 'body', video: '2z8JmcrW-As', tips: '상체를 약간 숙여 가슴 하부에 자극을 느끼세요.', injuryAvoid: ['shoulder'] },
+            { id: 3, name: '덤벨 프레스', category: '가슴', equipment: 'dumbbell', video: 'Vm9Z6A78mX0', tips: '덤벨을 내릴 때 가슴 근육이 충분히 이완되도록 합니다.', injuryAvoid: ['shoulder'] },
+            { id: 4, name: '덤벨 플라이', category: '가슴', equipment: 'dumbbell', video: 'eGjt4lk6gjw', tips: '팔꿈치를 약간 굽혀 관절의 부담을 줄이세요.', injuryAvoid: ['shoulder'] },
+            { id: 5, name: '벤치 프레스', category: '가슴', equipment: 'gym', video: 'rT7DgMEut5U', tips: '견갑골을 고정하고 바벨을 가슴 중앙으로 내립니다.', injuryAvoid: ['shoulder', 'wrist'] },
+            { id: 6, name: '풀업', category: '등', equipment: 'body', video: 'eGo4IYlbE5g', tips: '가슴을 바 쪽으로 당긴다는 느낌으로 올라가세요.', injuryAvoid: ['shoulder'] },
+            { id: 7, name: '인버티드 로우', category: '등', equipment: 'body', video: 'OIdM7Sly79s', tips: '몸을 일직선으로 유지하며 가슴을 당기세요.', injuryAvoid: [] },
+            { id: 8, name: '덤벨 로우', category: '등', equipment: 'dumbbell', video: '5Po_7I042Uo', tips: '팔꿈치를 옆구리에 붙여 등 근육을 수축하세요.', injuryAvoid: ['back'] },
+            { id: 9, name: '데드리프트', category: '등', equipment: 'gym', video: 'ytGaGIn3SjE', tips: '허리를 곧게 펴고 하체의 힘으로 들어올리세요.', injuryAvoid: ['back', 'knee'] },
+            { id: 10, name: '맨몸 스쿼트', category: '하체', equipment: 'body', video: 'aclHkVaku9U', tips: '무릎이 발끝보다 너무 나가지 않게 주의하세요.', injuryAvoid: ['knee'] },
+            { id: 11, name: '런지', category: '하체', equipment: 'body', video: 'QOVaHwm-Q6U', tips: '상체를 수직으로 유지하며 천천히 내려가세요.', injuryAvoid: ['knee'] },
+            { id: 12, name: '고블릿 스쿼트', category: '하체', equipment: 'dumbbell', video: 'MxsK_pI-hIs', tips: '덤벨을 가슴 앞에 붙여 중심을 잡으세요.', injuryAvoid: ['knee'] },
+            { id: 13, name: '바벨 스쿼트', category: '하체', equipment: 'gym', video: '1oed-UmAxFs', tips: '코어에 힘을 주고 발바닥 전체로 지면을 미세요.', injuryAvoid: ['knee', 'back'] },
+            { id: 14, name: '파이크 푸쉬업', category: '어깨', equipment: 'body', video: '88_Z1XWjIdM', tips: '엉덩이를 높이 들고 머리가 손 앞에 오게 내려가세요.', injuryAvoid: ['shoulder', 'wrist'] },
+            { id: 15, name: '숄더 프레스', category: '어깨', equipment: 'dumbbell', video: 'qEwKCR5JCog', tips: '팔꿈치가 너무 뒤로 빠지지 않게 주의하세요.', injuryAvoid: ['shoulder'] },
+            { id: 16, name: '레터럴 레이즈', category: '어깨', equipment: 'dumbbell', video: '3VQVv_u-n_4', tips: '무거운 무게보다 적절한 무게로 자극을 느끼세요.', injuryAvoid: ['shoulder'] },
+            { id: 17, name: '밀리터리 프레스', category: '어깨', equipment: 'gym', video: '2yjwXTZQDDI', tips: '몸의 반동을 줄이고 어깨 힘에 집중하세요.', injuryAvoid: ['shoulder', 'back'] },
+            { id: 18, name: '플랭크', category: '코어', equipment: 'body', video: 'pvIjsGZxpS8', tips: '머리부터 발끝까지 일직선을 유지하세요.', injuryAvoid: ['wrist'] },
+            { id: 19, name: '크런치', category: '코어', equipment: 'body', video: '5ER5Of4MO0g', tips: '상복부를 쥐어짜는 느낌으로 상체를 들어올리세요.', injuryAvoid: ['back'] },
+            { id: 20, name: '덤벨 사이드 밴드', category: '코어', equipment: 'dumbbell', video: 'rV6vI6K6O4s', tips: '반대쪽 옆구리가 늘어나는 것을 느끼세요.', injuryAvoid: ['back'] },
+            { id: 21, name: '케이블 크런치', category: '코어', equipment: 'gym', video: '8o-R_vT15o0', tips: '팔의 힘이 아닌 복근의 힘으로 당기세요.', injuryAvoid: ['back'] },
+            { id: 22, name: '버피 테스트', category: '유산소', equipment: 'body', video: 'Uly8j_L0WNo', tips: '착지 시 발바닥 전체를 사용하여 충격을 흡수하세요.', injuryAvoid: ['knee', 'wrist'] },
+            { id: 23, name: '러닝머신', category: '유산소', equipment: 'gym', video: '8i3Vrd957Xk', tips: '가벼운 조깅부터 시작하여 속도를 높이세요.', injuryAvoid: ['knee'] },
+            { id: 24, name: '실내 자전거', category: '유산소', equipment: 'gym', video: 'k8K8L7yv9qI', tips: '안장 높이를 무릎에 맞춰 조절하세요.', injuryAvoid: ['knee'] }
+        ];
+
+        const SUPPLEMENT_DB = [
+            {
+                name: '유청 단백질 파우더 (Whey Protein)',
+                category: '근육 합성 및 근육 피로 회복',
+                target: 'strength',
+                desc: '근력 증진을 위한 가장 정석적인 단백질 보충제입니다. 운동 후 근육 합성 및 빠른 회복을 촉진합니다.',
+                timing: '운동 후 30분 이내 섭취',
+                icon: 'fa-glass-water'
+            },
+            {
+                name: '모노 크레아틴 (Creatine)',
+                category: '근력 및 운동 수행능력 향상',
+                target: 'strength',
+                desc: '근육 내 수분을 끌어당겨 고강도 근력 운동 시 최대 근력 향상 및 수행 능력 증가를 돕습니다.',
+                timing: '운동 전/후 일정 시간에 하루 3~5g 섭취',
+                icon: 'fa-bolt'
+            },
+            {
+                name: 'L-카르니틴 (L-Carnitine)',
+                category: '지방 연소 및 다이어트 대사 촉진',
+                target: 'diet',
+                desc: '체내의 지방산을 에너지로 전환하도록 운반하는 역할을 하여 다이어트 시 체지방 소모를 돕습니다.',
+                timing: '운동 30분 전 섭취 권장',
+                icon: 'fa-fire'
+            },
+            {
+                name: '녹차 카테킨 추출물 (Catechin)',
+                category: '신진대사 촉진 및 항산화',
+                target: 'diet',
+                desc: '강력한 항산화 작용과 더불어 운동 중 체지방의 산화율을 높이고 피로를 줄여줍니다.',
+                timing: '식후 30분 이내 섭취',
+                icon: 'fa-leaf'
+            },
+            {
+                name: '종합 비타민 & 미네랄 (Multivitamin)',
+                category: '에너지 대사 및 피로 회복',
+                target: 'health',
+                desc: '우리 몸의 다양한 화학 작용과 에너지 소모에 핵심적인 미량 영양소군을 골고루 보충합니다.',
+                timing: '아침 혹은 점심 식후 즉시 섭취',
+                icon: 'fa-capsules'
+            },
+            {
+                name: '오메가-3 (Fish Oil)',
+                category: '혈행 개선 및 염증 반응 감소',
+                target: 'health',
+                desc: '심혈관 건강을 건강하게 지켜줄 뿐 아니라, 강한 운동 후 체내의 피로 염증 반응을 억제합니다.',
+                timing: '오전/오후 식후 섭취',
+                icon: 'fa-fish'
+            },
+            {
+                name: 'MSM (식물성 식이유황)',
+                category: '관절 연골 및 통증/염증 완화',
+                target: 'injury',
+                desc: '관절 및 연골 건강 기능성 원료로, 운동 시 느껴질 수 있는 관절 통증 및 염증 완화에 탁월합니다.',
+                timing: '아침/저녁 식후 즉시 섭취',
+                icon: 'fa-joint'
+            },
+            {
+                name: '글루코사민 & 콘드로이친',
+                category: '관절 윤활 및 연골 마모 방지',
+                target: 'injury',
+                desc: '연골을 보호하고 마모 속도를 늦춰주며 관절의 유연성 및 부드러운 움직임을 보완해 줍니다.',
+                timing: '점심/저녁 식후 즉시 섭취',
+                icon: 'fa-shield-halved'
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 카카오 지도 관련 상태 변수
+            let map = null;
+            let mapPs = null;
+            let mapMarkers = [];
+            let mapCustomOverlay = null;
+            let isPanningToPlace = false;
+            const REST_API_KEY = '0866465a865129b1e497bf249b6cba7d';
+
+            const form = document.getElementById('fit-form');
+            const steps = document.querySelectorAll('.form-step');
+            const stepIndicators = document.querySelectorAll('.step');
+            const nextBtns = document.querySelectorAll('.next-btn');
+            const prevBtns = document.querySelectorAll('.prev-btn');
+            const resultSection = document.getElementById('result-section');
+            const formSection = document.getElementById('form-section');
+            const modal = document.getElementById('exercise-modal');
+            const closeModal = document.querySelector('.close-modal');
+
+            let currentStep = 0;
+
+            function goToNextStep() {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+
+            // Enter 키 핸들링: 단계별 이동 지원
+            form.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    // select 박스나 버튼에서의 Enter는 기본 동작 허용
+                    if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+                    
+                    e.preventDefault(); // 기본 폼 제출 방지
+                    
+                    if (currentStep < steps.length - 1) {
+                        // 마지막 단계 전까지는 다음 단계로 이동
+                        goToNextStep();
+                    } else {
+                        // 마지막 단계에서는 폼 제출 실행
+                        form.requestSubmit();
+                    }
+                }
+            });
+
+            nextBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    goToNextStep();
+                });
+            });
+
+            prevBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentStep--;
+                    showStep(currentStep);
+                });
+            });
+
+            function showStep(stepIdx) {
+                steps.forEach((step, i) => {
+                    step.classList.toggle('active', i === stepIdx);
+                    stepIndicators[i].classList.toggle('active', i === stepIdx);
+                });
+            }
+
+            function validateStep(stepIdx) {
+                const currentInputs = steps[stepIdx].querySelectorAll('input[required], select[required]');
+                let valid = true;
+                currentInputs.forEach(input => {
+                    if (!input.value) {
+                        input.style.borderColor = 'var(--error)';
+                        valid = false;
+                    } else {
+                        input.style.borderColor = 'var(--border)';
+                    }
+                });
+                return valid;
+            }
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const userData = {
+                    age: document.getElementById('age').value,
+                    gender: document.getElementById('gender').value,
+                    height: document.getElementById('height').value,
+                    weight: document.getElementById('weight').value,
+                    goal: document.getElementById('goal').value,
+                    frequency: parseInt(document.getElementById('frequency').value),
+                    time: document.getElementById('time').value,
+                    equipment: document.getElementById('equipment').value,
+                    injuries: Array.from(document.querySelectorAll('input[name="injury"]:checked')).map(cb => cb.value)
+                };
+                generatePrescription(userData);
+            });
+
+            function generatePrescription(data) {
+                const heightM = data.height / 100;
+                const bmi = (data.weight / (heightM * heightM)).toFixed(1);
+                let bmiLabel = '';
+                if (bmi < 18.5) bmiLabel = '저체중';
+                else if (bmi < 23) bmiLabel = '정상';
+                else if (bmi < 25) bmiLabel = '과체중';
+                else bmiLabel = '비만';
+                document.getElementById('bmi-value').innerText = bmi;
+                document.getElementById('bmi-label').innerText = bmiLabel;
+
+                // 성별에 따른 분당 소모 칼로리 설정 (남성: 5.8 kcal/min, 여성: 4.8 kcal/min)
+                // 남성 60분 기준 약 350 kcal, 여성 60분 기준 약 290 kcal 소모 (남성보다 적게 설정)
+                const kcalPerMin = data.gender === 'male' ? 5.8 : 4.8;
+                const standardWeight = data.gender === 'male' ? 75 : 60;
+                const weightFactor = data.weight ? (data.weight / standardWeight) : 1.0;
+                
+                const estimatedCal = Math.round(data.time * kcalPerMin * weightFactor);
+                document.getElementById('cal-value').innerText = estimatedCal;
+
+                const injuryCount = data.injuries.filter(i => i !== 'none').length;
+                let safetyGrade = 'A';
+                let safetyLabel = '매우 안전';
+                if (injuryCount > 0) { safetyGrade = 'B'; safetyLabel = '주의 권장'; }
+                if (injuryCount > 2) { safetyGrade = 'C'; safetyLabel = '재활 중심'; }
+                document.getElementById('safety-value').innerText = safetyGrade;
+                document.getElementById('safety-label').innerText = safetyLabel;
+
+                const availableExercises = EXERCISE_DB.filter(ex => {
+                    if (data.equipment === 'body' && ex.equipment !== 'body') return false;
+                    if (data.equipment === 'dumbbell' && (ex.equipment !== 'body' && ex.equipment !== 'dumbbell')) return false;
+                    return !ex.injuryAvoid.some(injury => data.injuries.includes(injury));
+                });
+
+                const routine = generateWeeklySchedule(data.frequency, availableExercises);
+                renderRoutine(routine);
+                renderSupplements(data);
+                renderCardioPrescription(data, bmi);
+                renderDietPrescription(data, bmi);
+                formSection.classList.add('hidden');
+                resultSection.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // 카카오 지도 활성화 및 로딩 (화면 렌더링 후 딜레이 주기)
+                setTimeout(() => {
+                    initKakaoMap();
+                }, 100);
+            }
+
+            function generateWeeklySchedule(frequency, exercises) {
+                const days = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+                const schedule = [];
+                let workoutDays = [];
+                if (frequency === 2) workoutDays = [1, 4];
+                else if (frequency === 3) workoutDays = [0, 2, 4];
+                else if (frequency === 4) workoutDays = [0, 1, 3, 4];
+                else workoutDays = [0, 1, 2, 3, 4];
+
+                days.forEach((day, idx) => {
+                    if (workoutDays.includes(idx)) {
+                        const dailyEx = [];
+                        const categories = ['가슴', '등', '하체', '어깨', '코어', '유산소'];
+                        categories.forEach(cat => {
+                            const catExercises = exercises.filter(e => e.category === cat);
+                            if (catExercises.length > 0) {
+                                dailyEx.push(catExercises[Math.floor(Math.random() * catExercises.length)]);
+                            }
+                        });
+                        schedule.push({ day, rest: false, exercises: dailyEx.slice(0, 5) });
+                    } else {
+                        schedule.push({ day, rest: true, exercises: [] });
+                    }
+                });
+                return schedule;
+            }
+
+            function renderRoutine(schedule) {
+                const container = document.getElementById('weekly-routine');
+                container.innerHTML = '';
+                schedule.forEach(dayInfo => {
+                    const dayCard = document.createElement('div');
+                    dayCard.className = `day-card ${dayInfo.rest ? 'rest-day' : ''}`;
+                    let exercisesHtml = dayInfo.rest ? '<div class="exercise-list"><p class="text-muted">충분한 휴식을 취하세요.</p></div>' : '<div class="exercise-list">';
+                    if (!dayInfo.rest) {
+                        dayInfo.exercises.forEach(ex => {
+                            exercisesHtml += `<div class="exercise-item" onclick="openExerciseModal(${ex.id})"><span class="exercise-name">${ex.name}</span><span class="exercise-meta">3세트 x 12회</span></div>`;
+                        });
+                        exercisesHtml += '</div>';
+                    }
+                    dayCard.innerHTML = `<div class="day-header ${dayInfo.rest ? 'rest' : ''}"><span>${dayInfo.day}</span><span>${dayInfo.rest ? '<i class="fas fa-bed"></i>' : '<i class="fas fa-running"></i>'}</span></div>${exercisesHtml}`;
+                    container.appendChild(dayCard);
+                });
+            }
+
+            function renderCardioPrescription(data, bmi) {
+                const container = document.getElementById('cardio-prescription');
+                container.innerHTML = '';
+
+                // 1. 유산소 필요도 (Necessity) 산정
+                let necessityScore = 3;
+                let necessityText = '보통';
+                let necessityClass = 'normal';
+
+                if (data.goal === 'diet') {
+                    necessityScore = 5;
+                    necessityText = '매우 높음';
+                    necessityClass = 'very-high';
+                } else if (bmi >= 25) {
+                    necessityScore = 4;
+                    necessityText = '높음';
+                    necessityClass = 'high';
+                } else if (data.goal === 'health') {
+                    necessityScore = 4;
+                    necessityText = '높음';
+                    necessityClass = 'high';
+                } else if (data.goal === 'strength') {
+                    if (bmi < 18.5) {
+                        necessityScore = 2;
+                        necessityText = '낮음';
+                        necessityClass = 'normal';
+                    } else {
+                        necessityScore = 3;
+                        necessityText = '보통';
+                        necessityClass = 'normal';
+                    }
+                }
+
+                // 2. 권장 유산소 운동 시간 (Cardio Duration) 산정
+                let duration = 20;
+                if (data.goal === 'diet') {
+                    duration = 35;
+                    if (bmi >= 25) duration = 40;
+                    if (bmi >= 30) duration = 30; // 고도 비만은 관절 무리 방지로 30분 제한
+                } else if (data.goal === 'health') {
+                    duration = 25;
+                    if (bmi >= 25) duration = 30;
+                } else if (data.goal === 'strength') {
+                    duration = 15;
+                }
+
+                // 3. 추천하는 유산소 종목 매칭
+                let recommendedCardio = '';
+                let cardioIcon = '';
+                let cardioSubtitle = '';
+                let cardioDesc = '';
+                let cardioTips = '';
+
+                const hasKneeInjury = data.injuries && data.injuries.includes('knee');
+                const hasBackInjury = data.injuries && data.injuries.includes('back');
+                
+                // 관절 통증이 있거나 BMI 27 이상 고체중 시 충격 차단을 위해 무조건 사이클
+                if (hasKneeInjury || hasBackInjury || bmi >= 27) {
+                    recommendedCardio = '실내 사이클 (Stationary Bike)';
+                    cardioIcon = 'fa-bicycle';
+                    cardioSubtitle = '☘️ 관절 부담 최소화 / 체중 분산 최적화';
+                    cardioDesc = '무릎과 허리 등 척추 및 주요 하체 관절에 전해지는 체중 충격을 최소화하면서도, 효과적인 심폐 자극 및 대퇴사두근 강화를 이끌어낼 수 있는 가장 안전하고 효율적인 유산소 종목입니다.';
+                    
+                    if (hasKneeInjury) {
+                        cardioTips = '안장 높이를 조절하여 페달을 가장 아래로 내렸을 때 무릎이 약 10~15도 정도 살짝 굽혀지는 각도로 세팅해야 관절에 무리가 가지 않습니다.';
+                    } else if (bmi >= 27) {
+                        cardioTips = '상체를 곧게 펴거나 등받이가 있는 좌식 사이클(Recumbent)을 적극 활용하시면 허리에 가해지는 부하를 크게 줄일 수 있습니다.';
+                    } else {
+                        cardioTips = '적당한 저항을 걸어 분당 회전수(RPM)를 70~80 정도로 일정하게 유지하는 안정적인 페달링을 권장합니다.';
+                    }
+                } 
+                // 관절이 건강하고 다이어트 목표인 경우 -> 천국의 계단
+                else if (data.goal === 'diet' && bmi < 27) {
+                    recommendedCardio = '천국의 계단 (Stair Climber)';
+                    cardioIcon = 'fa-stairs';
+                    cardioSubtitle = '⚡ 고강도 칼로리 연소 / 힙업 및 하체 강화';
+                    cardioDesc = '유산소 종목 중 시간당 칼로리 소모량이 압도적으로 높은 최강의 다이어트 머신입니다. 계단을 한 칸씩 디디며 대둔근과 햄스트링을 깊게 수축시켜 힙업과 동시에 강력한 심폐 능력을 길러줍니다.';
+                    cardioTips = '발바닥 전체로 계단을 꾹 밀어내며 엉덩이 근육의 팽창을 느끼세요. 허리가 말리지 않도록 코어에 힘을 주고, 손잡이에 과도하게 체중을 기대지 않아야 운동 효율이 극대화됩니다.';
+                } 
+                // 일반적인 경우 -> 런닝머신
+                else {
+                    recommendedCardio = '런닝머신 (Treadmill)';
+                    cardioIcon = 'fa-person-running';
+                    cardioSubtitle = '🏃 표준 심폐 활성화 / 인터벌 러닝 최적화';
+                    cardioDesc = '가장 대중적이고 직관적인 전신 유산소 운동입니다. 걷기부터 인터벌 러닝까지 세밀한 속도 조절이 가능하여 기초 대사율을 끌어올리고 심장을 튼튼하게 단련하는 데 가장 적합합니다.';
+                    cardioTips = '단조로운 평지 걷기보다는 경사도(Incline)를 3~5% 정도로 살짝 설정하여 걸으면 관절 충격은 줄이면서 둔근과 종아리의 운동 효율을 극대화할 수 있습니다.';
+                }
+
+                // 4. 별 마크 생성
+                let starHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= necessityScore) {
+                        starHtml += '<i class="fas fa-star"></i>';
+                    } else {
+                        starHtml += '<i class="far fa-star"></i>';
+                    }
+                }
+
+                const gaugePercent = (necessityScore / 5) * 100;
+
+                // 5. UI 렌더링 구성
+                const statusCard = document.createElement('div');
+                statusCard.className = 'cardio-status-card';
+                statusCard.innerHTML = `
+                    <span class="cardio-necessity-title">유산소 필요도</span>
+                    <div class="cardio-necessity-value ${necessityClass}">${necessityText}</div>
+                    <div class="cardio-necessity-stars">${starHtml}</div>
+                    <div class="cardio-gauge-bg">
+                        <div class="cardio-gauge-fill ${necessityClass}" style="width: ${gaugePercent}%"></div>
+                    </div>
+                `;
+
+                const recCard = document.createElement('div');
+                recCard.className = 'cardio-recommendation-card';
+                recCard.innerHTML = `
+                    <div class="cardio-rec-body">
+                        <div class="cardio-rec-header">
+                            <div class="cardio-rec-icon">
+                                <i class="fas ${cardioIcon}"></i>
+                            </div>
+                            <div class="cardio-rec-title-group">
+                                <span class="cardio-rec-subtitle">추천 유산소 종목</span>
+                                <h4>${recommendedCardio}</h4>
+                            </div>
+                        </div>
+                        <p class="cardio-rec-desc">${cardioDesc}</p>
+                        <div class="cardio-info-chips">
+                            <div class="cardio-chip duration">
+                                <i class="fas fa-clock"></i> 권장 시간: &nbsp;<strong>${duration}분</strong>
+                            </div>
+                            <div class="cardio-chip">
+                                <i class="fas fa-weight-hanging"></i> 체중 계수 반영됨
+                            </div>
+                            <div class="cardio-chip">
+                                <i class="fas fa-heart-pulse"></i> BMI: <strong>${bmi}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cardio-rec-footer-tip">
+                        <i class="fas fa-lightbulb"></i>
+                        <span><strong>처방 가이드:</strong> ${cardioTips}</span>
+                    </div>
+                `;
+
+                container.appendChild(statusCard);
+                container.appendChild(recCard);
+            }
+
+            function renderDietPrescription(data, bmi) {
+                const container = document.getElementById('diet-prescription');
+                container.innerHTML = '';
+
+                const age = parseInt(data.age);
+                const height = parseFloat(data.height);
+                const weight = parseFloat(data.weight);
+
+                // 1. 기초대사량 (BMR) 계산 - 해리스-베네딕트 공식 개정판
+                let bmr = 0;
+                if (data.gender === 'male') {
+                    bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+                } else {
+                    bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+                }
+                bmr = Math.round(bmr);
+
+                // 2. 활동대사량 (TDEE) 계산
+                let activityFactor = 1.2;
+                if (data.frequency === 2) activityFactor = 1.375;
+                else if (data.frequency === 3) activityFactor = 1.55;
+                else if (data.frequency === 4) activityFactor = 1.55;
+                else if (data.frequency >= 5) activityFactor = 1.725;
+
+                const tdee = Math.round(bmr * activityFactor);
+
+                // 3. 목표 섭취 칼로리 (Target Calories) 도출
+                let targetCal = tdee;
+                let goalSubtext = '';
+
+                if (data.goal === 'diet') {
+                    targetCal = tdee - 500;
+                    if (targetCal < bmr) {
+                        targetCal = bmr;
+                        goalSubtext = `체지방 소모를 극대화하되, 건강을 지키는 최소 에너지원인 <strong>기초대사량(BMR)</strong> 수준에 맞췄습니다.`;
+                    } else {
+                        goalSubtext = `일일 소비 에너지(TDEE) 대비 <strong>500kcal 적자</strong>를 유도하여 건강하게 체지방을 연소하는 식단입니다.`;
+                    }
+                } else if (data.goal === 'strength') {
+                    targetCal = tdee + 300;
+                    goalSubtext = `근육 합성 및 체중 벌크업 효율을 극대화하기 위해 일일 에너지 대비 <strong>300kcal 초과</strong> 섭취를 지향합니다.`;
+                } else {
+                    targetCal = tdee;
+                    goalSubtext = `체중 증감 없이 생체 밸런스를 유지하고 컨디션을 최상으로 관리하는 <strong>항상성 유지</strong> 식단입니다.`;
+                }
+                targetCal = Math.round(targetCal);
+
+                // 4. 운동 목표별 탄단지 구성 비율 (Macros Ratio)
+                let carbsPct = 50;
+                let proteinPct = 20;
+                let fatPct = 30;
+
+                if (data.goal === 'diet') {
+                    carbsPct = 40;
+                    proteinPct = 35;
+                    fatPct = 25;
+                } else if (data.goal === 'strength') {
+                    carbsPct = 50;
+                    proteinPct = 30;
+                    fatPct = 20;
+                }
+
+                // 5. 탄단지 권장 그람(g) 수 계산 (탄/단 1g = 4kcal, 지 1g = 9kcal)
+                let carbsG = Math.round((targetCal * (carbsPct / 100)) / 4);
+                let proteinG = Math.round((targetCal * (proteinPct / 100)) / 4);
+                let fatG = Math.round((targetCal * (fatPct / 100)) / 9);
+
+                // [신장 안전 장치] 일일 단백질 섭취량을 체중(kg)의 최대 2배(g)로 제한
+                const maxProteinG = Math.round(weight * 2.0);
+                let isProteinCapped = false;
+                let excessProteinCal = 0;
+
+                if (proteinG > maxProteinG) {
+                    const originalProteinG = proteinG;
+                    proteinG = maxProteinG;
+                    isProteinCapped = true;
+                    // 초과된 단백질 칼로리를 구하여 탄수화물로 완전 이관
+                    excessProteinCal = (originalProteinG - maxProteinG) * 4;
+                    const extraCarbsG = Math.round(excessProteinCal / 4);
+                    carbsG += extraCarbsG;
+                }
+
+                const carbsCal = Math.round(carbsG * 4);
+                const proteinCal = Math.round(proteinG * 4);
+                const fatCal = Math.round(fatG * 9);
+
+                // 실제 재분배에 따라 새로운 탄단지 비율(%) 역산 및 보정
+                carbsPct = Math.round((carbsCal / targetCal) * 100);
+                proteinPct = Math.round((proteinCal / targetCal) * 100);
+                fatPct = 100 - carbsPct - proteinPct; // 합계가 100%가 되도록 보정
+
+                // 단백질 한계 초과 시 알림 문구
+                let cappedAlertHtml = '';
+                if (isProteinCapped) {
+                    cappedAlertHtml = `
+                        <div style="background: rgba(218, 54, 51, 0.1); border: 1px solid var(--error); color: #ff6b6b; padding: 0.8rem 1rem; border-radius: 10px; margin-top: 1rem; font-size: 0.85rem; line-height: 1.4; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                            <i class="fas fa-circle-exclamation" style="font-size: 1.1rem;"></i>
+                            <span><strong>신장 건강 보호 안내:</strong> 일일 단백질 권장량이 신장 안전 제한치(체중의 2배인 ${maxProteinG}g)를 초과하여 상한선으로 조절되었습니다. 남는 에너지는 탄수화물(+${Math.round(excessProteinCal / 4)}g)로 안전하게 이관되었습니다.</span>
+                        </div>
+                    `;
+                }
+
+                // 6. 탄단지별 추천 청정 식재료 리스트
+                const foodRecommendations = {
+                    carbs: [
+                        '현미밥, 잡곡밥, 오트밀',
+                        '고구마, 단호박, 감자',
+                        '통밀빵, 퀴노아, 바나나'
+                    ],
+                    protein: [
+                        '닭가슴살, 오리 가슴살',
+                        '소고기 우둔살/설도 (지방 적은 부위)',
+                        '연어, 틸라피아/흰살 생선, 달걀',
+                        '두부, 템페, 프로틴 파우더'
+                    ],
+                    fat: [
+                        '아보카도, 혼합 견과류 (아몬드, 호두)',
+                        '엑스트라 버진 올리브유, 들기름',
+                        '연어/생선 기름, 천연 버터 소량'
+                    ]
+                };
+
+                // 7. UI 구성
+                container.innerHTML = `
+                    <div class="diet-summary-section">
+                        <span class="diet-cal-label">일일 권장 섭취 에너지</span>
+                        <div class="diet-cal-value">${targetCal.toLocaleString()} kcal</div>
+                        <p class="diet-cal-subtext">
+                            나의 기초대사량(BMR)은 <strong>${bmr.toLocaleString()} kcal</strong>이며, TDEE는 <strong>${tdee.toLocaleString()} kcal</strong>입니다.<br>
+                            ${goalSubtext}
+                        </p>
+                        ${cappedAlertHtml}
+                    </div>
+
+                    <div class="diet-macro-bar-container">
+                        <div class="diet-macro-bar-label">
+                            <span>권장 3대 영양소 섭취 비율</span>
+                            <span>탄수화물 ${carbsPct}% : 단백질 ${proteinPct}% : 지방 ${fatPct}%</span>
+                        </div>
+                        <div class="diet-macro-bar">
+                            <div class="diet-macro-fill carbs" style="width: ${carbsPct}%" title="탄수화물 ${carbsPct}%"></div>
+                            <div class="diet-macro-fill protein" style="width: ${proteinPct}%" title="단백질 ${proteinPct}%"></div>
+                            <div class="diet-macro-fill fat" style="width: ${fatPct}%" title="지방 ${fatPct}%"></div>
+                        </div>
+                        <div class="diet-macro-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot carbs"></span>
+                                <span>탄수화물 (${carbsG}g / ${carbsCal}kcal)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot protein"></span>
+                                <span>단백질 (${proteinG}g / ${proteinCal}kcal)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot fat"></span>
+                                <span>지방 (${fatG}g / ${fatCal}kcal)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="diet-macro-grid">
+                        <div class="macro-card carbs">
+                            <div class="macro-card-header">
+                                <span class="macro-card-title">🍞 탄수화물</span>
+                                <span class="macro-card-pct">${carbsPct}%</span>
+                            </div>
+                            <div class="macro-card-value">${carbsG}g</div>
+                            <div class="macro-card-cal">${carbsCal} kcal</div>
+                            <div class="macro-card-foods">
+                                <div class="macro-food-title">
+                                    <i class="fas fa-check-circle"></i> 추천 복합 탄수화물
+                                </div>
+                                <ul class="macro-food-list">
+                                    ${foodRecommendations.carbs.map(food => `<li>${food}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="macro-card protein">
+                            <div class="macro-card-header">
+                                <span class="macro-card-title">🥩 단백질</span>
+                                <span class="macro-card-pct">${proteinPct}%</span>
+                            </div>
+                            <div class="macro-card-value">${proteinG}g</div>
+                            <div class="macro-card-cal">${proteinCal} kcal</div>
+                            <div class="macro-card-foods">
+                                <div class="macro-food-title">
+                                    <i class="fas fa-check-circle"></i> 양질의 단백질 급원
+                                </div>
+                                <ul class="macro-food-list">
+                                    ${foodRecommendations.protein.map(food => `<li>${food}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="macro-card fat">
+                            <div class="macro-card-header">
+                                <span class="macro-card-title">🥑 지방</span>
+                                <span class="macro-card-pct">${fatPct}%</span>
+                            </div>
+                            <div class="macro-card-value">${fatG}g</div>
+                            <div class="macro-card-cal">${fatCal} kcal</div>
+                            <div class="macro-card-foods">
+                                <div class="macro-food-title">
+                                    <i class="fas fa-check-circle"></i> 건강한 불포화 지방
+                                </div>
+                                <ul class="macro-food-list">
+                                    ${foodRecommendations.fat.map(food => `<li>${food}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderSupplements(data) {
+                const container = document.getElementById('supplement-list');
+                container.innerHTML = '';
+
+                let recommendedList = [];
+
+                // 1. 관절 통증/부상 여부 확인 (injury target 추출)
+                const hasInjury = data.injuries && data.injuries.some(inj => inj !== 'none');
+                
+                if (hasInjury) {
+                    // 부상이 있는 경우, 관절 연골 전문 영양제 2개(MSM, 콘드로이친)를 리스트 상단에 추가하고 highlight 처리
+                    const jointSupplements = SUPPLEMENT_DB.filter(s => s.target === 'injury').map(s => ({
+                        ...s,
+                        highlight: true,
+                        badgeText: '⚠️ 관절 건강 집중 케어'
+                    }));
+                    recommendedList.push(...jointSupplements);
+                }
+
+                // 2. 운동 목표(goal)에 맞는 영양제 추가
+                const goalSupplements = SUPPLEMENT_DB.filter(s => s.target === data.goal).map(s => ({
+                    ...s,
+                    highlight: false,
+                    badgeText: '🎯 목표 맞춤'
+                }));
+                recommendedList.push(...goalSupplements);
+
+                // 3. 만약 부상이 없다면 서포트 영양제(오메가3 or 종합비타민 중 하나)를 서브로 추가
+                if (!hasInjury) {
+                    // 이미 goal에서 health를 추천했을 수 있으므로 겹치지 않게 처리
+                    const healthSupplements = SUPPLEMENT_DB.filter(s => s.target === 'health' && !recommendedList.some(r => r.name === s.name)).map(s => ({
+                        ...s,
+                        highlight: false,
+                        badgeText: '🩺 건강 보조'
+                    }));
+                    // 최대 3~4개만 추천하기 위해 1개만 서브로 추가
+                    if (healthSupplements.length > 0) {
+                        recommendedList.push(healthSupplements[0]);
+                    }
+                }
+
+                // 렌더링 시작
+                recommendedList.forEach(sup => {
+                    const card = document.createElement('div');
+                    card.className = `supplement-card ${sup.highlight ? 'highlight' : ''}`;
+                    
+                    // 배지 마크업 생성
+                    const badgeHtml = sup.badgeText ? `<span class="supplement-badge">${sup.badgeText}</span>` : '';
+
+                    card.innerHTML = `
+                        ${badgeHtml}
+                        <div class="supplement-header">
+                            <div class="supplement-icon">
+                                <i class="fas ${sup.icon}"></i>
+                            </div>
+                            <div class="supplement-title-group">
+                                <span class="supplement-category">${sup.category}</span>
+                                <h4>${sup.name}</h4>
+                            </div>
+                        </div>
+                        <p class="supplement-desc">${sup.desc}</p>
+                        <div class="supplement-footer">
+                            <span class="text-muted">복용 권장 시간대</span>
+                            <span class="supplement-timing">${sup.timing}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // 카카오 지도 초기화 및 지도 연동 함수들 정의
+            function initKakaoMap() {
+                const mapContainer = document.getElementById('map');
+                if (!mapContainer || map) return;
+
+                const mapOption = {
+                    center: new kakao.maps.LatLng(37.498095, 127.027610), // 강남역 기본 좌표
+                    level: 3
+                };
+
+                map = new kakao.maps.Map(mapContainer, mapOption);
+                mapPs = new kakao.maps.services.Places();
+                mapCustomOverlay = new kakao.maps.CustomOverlay({
+                    clickable: true
+                });
+
+                // 기본 지역인 "강남역"으로 자동 지도 로드 및 검색
+                document.getElementById('map-search-keyword').value = '강남역';
+                searchGyms('강남역 헬스장');
+
+                // 지도가 드래그 이동하거나 확대/축소되어 멈췄을 때(idle 상태) 현재 화면 영역 내 헬스장 재검색
+                kakao.maps.event.addListener(map, 'idle', () => {
+                    if (isPanningToPlace) {
+                        isPanningToPlace = false; // 카드를 클릭했거나 검색으로 지도가 움직인 경우 무시
+                        return;
+                    }
+                    searchGymsInBounds();
+                });
+
+                // 헬스장 검색 버튼 이벤트 등록
+                document.getElementById('map-search-submit').addEventListener('click', () => {
+                    const keyword = document.getElementById('map-search-keyword').value.trim();
+                    if (!keyword) {
+                        alert('검색할 지역명을 입력해 주세요.');
+                        return;
+                    }
+                    searchGyms(keyword + ' 헬스장');
+                });
+
+                // 검색창 Enter 키 이벤트 등록
+                document.getElementById('map-search-keyword').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('map-search-submit').click();
+                    }
+                });
+            }
+
+            // file 프로토콜 및 SDK 검색 에러 대응을 위한 통합 검색 함수 (REST API fallback)
+            function kakaoSearch(keyword, bounds, callback) {
+                if (window.location.protocol === 'file:') {
+                    let url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(keyword)}`;
+                    if (bounds) {
+                        const sw = bounds.getSouthWest();
+                        const ne = bounds.getNorthEast();
+                        url += `&rect=${sw.getLng()},${sw.getLat()},${ne.getLng()},${ne.getLat()}`;
+                    }
+
+                    fetch(url, {
+                        headers: {
+                            'Authorization': `KakaoAK ${REST_API_KEY}`
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(resData => {
+                        const documents = resData.documents || [];
+                        if (documents.length > 0) {
+                            callback(documents, kakao.maps.services.Status.OK);
+                        } else {
+                            callback([], kakao.maps.services.Status.ZERO_RESULT);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('REST API Fallback Search Error:', err);
+                        callback([], kakao.maps.services.Status.ERROR);
+                    });
+                } else {
+                    if (!mapPs) {
+                        callback([], kakao.maps.services.Status.ERROR);
+                        return;
+                    }
+                    const options = bounds ? { bounds: bounds } : {};
+                    mapPs.keywordSearch(keyword, (data, status) => {
+                        callback(data, status);
+                    }, options);
+                }
+            }
+
+            function renderGymListAndMarkers(data) {
+                const listContainer = document.getElementById('map-places-list');
+                listContainer.innerHTML = '';
+                clearMapMarkers();
+                if (mapCustomOverlay) mapCustomOverlay.setMap(null);
+
+                data.forEach((place, index) => {
+                    const placePosition = new kakao.maps.LatLng(place.y, place.x);
+                    
+                    const marker = addMapMarker(placePosition, index, place);
+
+                    const placeCard = document.createElement('div');
+                    placeCard.className = 'place-item-card';
+                    placeCard.setAttribute('data-id', place.id);
+                    placeCard.innerHTML = `
+                        <div class="place-name">
+                            <span>${place.place_name}</span>
+                            <span class="place-index">${index + 1}</span>
+                        </div>
+                        <div class="place-address">${place.road_address_name || place.address_name}</div>
+                        <div class="place-phone">
+                            <i class="fas fa-phone"></i> ${place.phone || '전화번호 없음'}
+                        </div>
+                        <div style="margin-top: 0.5rem; text-align: right;">
+                            <a href="${place.place_url}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 0.8rem; font-weight: 600;" class="place-detail-link">
+                                상세보기 <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.75rem;"></i>
+                            </a>
+                        </div>
+                    `;
+
+                    placeCard.addEventListener('click', () => {
+                        document.querySelectorAll('.place-item-card').forEach(c => c.classList.remove('active'));
+                        placeCard.classList.add('active');
+
+                        isPanningToPlace = true; // 카드 클릭으로 지도를 수동 이동함을 마킹하여 재검색 방지
+                        map.panTo(placePosition);
+                        showCustomOverlay(marker, place);
+                    });
+
+                    // 상세보기 링크 클릭 시 카드 자체의 클릭 이벤트 버블링 방지
+                    placeCard.querySelector('.place-detail-link').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+
+                    listContainer.appendChild(placeCard);
+                });
+            }
+
+            function searchGyms(keyword) {
+                kakaoSearch(keyword, null, (data, status) => {
+                    const listContainer = document.getElementById('map-places-list');
+
+                    if (status === kakao.maps.services.Status.OK) {
+                        renderGymListAndMarkers(data);
+
+                        // 지도 범위를 검색 결과에 맞게 재설정
+                        const bounds = new kakao.maps.LatLngBounds();
+                        data.forEach(place => {
+                            bounds.extend(new kakao.maps.LatLng(place.y, place.x));
+                        });
+                        
+                        isPanningToPlace = true; // 검색으로 지도가 자동 이동함을 마킹하여 재검색 방지
+                        map.setBounds(bounds);
+                    } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                        listContainer.innerHTML = '<div class="map-no-results">검색 결과가 없습니다. 다른 지역명으로 검색해 보세요.</div>';
+                        clearMapMarkers();
+                        if (mapCustomOverlay) mapCustomOverlay.setMap(null);
+                    } else {
+                        listContainer.innerHTML = '<div class="map-no-results">검색 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</div>';
+                        clearMapMarkers();
+                        if (mapCustomOverlay) mapCustomOverlay.setMap(null);
+                    }
+                });
+            }
+
+            function searchGymsInBounds() {
+                if (!map) return;
+                
+                const bounds = map.getBounds();
+                
+                kakaoSearch('헬스장', bounds, (data, status) => {
+                    const listContainer = document.getElementById('map-places-list');
+
+                    if (status === kakao.maps.services.Status.OK) {
+                        renderGymListAndMarkers(data);
+                    } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                        listContainer.innerHTML = '<div class="map-no-results">현재 지도 영역 내에 헬스장 검색 결과가 없습니다.</div>';
+                        clearMapMarkers();
+                        if (mapCustomOverlay) mapCustomOverlay.setMap(null);
+                    } else {
+                        listContainer.innerHTML = '<div class="map-no-results">검색 중 오류가 발생했습니다.</div>';
+                        clearMapMarkers();
+                        if (mapCustomOverlay) mapCustomOverlay.setMap(null);
+                    }
+                });
+            }
+
+            function addMapMarker(position, index, place) {
+                const marker = new kakao.maps.Marker({
+                    position: position,
+                    map: map
+                });
+
+                kakao.maps.event.addListener(marker, 'click', () => {
+                    showCustomOverlay(marker, place);
+                    
+                    const cards = document.querySelectorAll('.place-item-card');
+                    cards.forEach(card => {
+                        card.classList.remove('active');
+                        if (card.getAttribute('data-id') === place.id) {
+                            card.classList.add('active');
+                            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    });
+                });
+
+                mapMarkers.push(marker);
+                return marker;
+            }
+
+            function clearMapMarkers() {
+                mapMarkers.forEach(m => m.setMap(null));
+                mapMarkers = [];
+            }
+
+            function showCustomOverlay(marker, place) {
+                if (mapCustomOverlay) mapCustomOverlay.setMap(null);
+
+                const overlayContent = document.createElement('div');
+                overlayContent.className = 'custom-overlay-content';
+                overlayContent.innerHTML = `
+                    <div style="position: absolute; top: 5px; right: 8px; cursor: pointer; color: var(--text-muted); font-size: 1rem;" class="overlay-close-btn">&times;</div>
+                    <div class="custom-overlay-title">${place.place_name}</div>
+                    <div class="custom-overlay-addr">${place.road_address_name || place.address_name}</div>
+                    <div class="custom-overlay-tel">${place.phone || '전화번호 없음'}</div>
+                    <div style="margin-top: 0.5rem; text-align: right;">
+                        <a href="${place.place_url}" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 0.75rem; font-weight: 600;" class="overlay-detail-link">
+                            상세보기 <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i>
+                        </a>
+                    </div>
+                `;
+
+                // 닫기 버튼 이벤트
+                overlayContent.querySelector('.overlay-close-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mapCustomOverlay.setMap(null);
+                });
+
+                // 상세보기 링크 클릭 시 이벤트 버블링 방지
+                overlayContent.querySelector('.overlay-detail-link').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+
+                mapCustomOverlay.setContent(overlayContent);
+                mapCustomOverlay.setPosition(marker.getPosition());
+                mapCustomOverlay.setMap(map);
+            }
+
+            window.openExerciseModal = function(exId) {
+                const ex = EXERCISE_DB.find(e => e.id === exId);
+                if (!ex) return;
+                document.getElementById('modal-title').innerText = ex.name;
+                document.getElementById('modal-desc').innerText = `${ex.category} 부위 운동으로 수행합니다.`;
+                document.getElementById('modal-tip').innerText = ex.tips;
+                document.getElementById('video-container').innerHTML = `<iframe src="https://www.youtube.com/embed/${ex.video}" allowfullscreen></iframe>`;
+                modal.classList.remove('hidden');
+            };
+
+            closeModal.onclick = () => { modal.classList.add('hidden'); document.getElementById('video-container').innerHTML = ''; };
+            window.onclick = (e) => { if (e.target === modal) { modal.classList.add('hidden'); document.getElementById('video-container').innerHTML = ''; } };
+
+            document.getElementById('download-csv').addEventListener('click', () => {
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF날짜,운동명,세트,횟수,비고\r\n2026-05-11,예시 운동,3,12,수행 완료\r\n";
+                const link = document.createElement("a");
+                link.setAttribute("href", encodeURI(csvContent));
+                link.setAttribute("download", "fit_script_routine.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                resultSection.classList.add('hidden');
+                formSection.classList.remove('hidden');
+                form.reset();
+                currentStep = 0;
+                showStep(0);
+            });
+        });
+    </script>
+</body>
+</html>
