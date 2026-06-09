@@ -2246,47 +2246,68 @@
                 const mapContainer = document.getElementById('map');
                 if (!mapContainer || map) return;
 
-                const mapOption = {
-                    center: new kakao.maps.LatLng(37.498095, 127.027610), // 강남역 기본 좌표
-                    level: 3
-                };
-
-                map = new kakao.maps.Map(mapContainer, mapOption);
-                mapPs = new kakao.maps.services.Places();
-                mapCustomOverlay = new kakao.maps.CustomOverlay({
-                    clickable: true
-                });
-
-                // 기본 지역인 "강남역"으로 자동 지도 로드 및 검색
-                document.getElementById('map-search-keyword').value = '강남역';
-                searchGyms('강남역 헬스장');
-
-                // 지도가 드래그 이동하거나 확대/축소되어 멈췄을 때(idle 상태) 현재 화면 영역 내 헬스장 재검색
-                kakao.maps.event.addListener(map, 'idle', () => {
-                    if (isPanningToPlace) {
-                        isPanningToPlace = false; // 카드를 클릭했거나 검색으로 지도가 움직인 경우 무시
-                        return;
+                try {
+                    if (typeof kakao === 'undefined' || !kakao.maps) {
+                        throw new Error("카카오 지도 라이브러리(kakao.maps)가 로드되지 않았습니다. 현재 배포된 도메인(https://health-azure-one.vercel.app)이 카카오 디벨로퍼스(https://developers.kakao.com) 웹 플랫폼 설정에 정확히 추가되어 있는지 확인해 주세요.");
                     }
-                    searchGymsInBounds();
-                });
 
-                // 헬스장 검색 버튼 이벤트 등록
-                document.getElementById('map-search-submit').addEventListener('click', () => {
-                    const keyword = document.getElementById('map-search-keyword').value.trim();
-                    if (!keyword) {
-                        alert('검색할 지역명을 입력해 주세요.');
-                        return;
-                    }
-                    searchGyms(keyword + ' 헬스장');
-                });
+                    const mapOption = {
+                        center: new kakao.maps.LatLng(37.498095, 127.027610), // 강남역 기본 좌표
+                        level: 3
+                    };
 
-                // 검색창 Enter 키 이벤트 등록
-                document.getElementById('map-search-keyword').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        document.getElementById('map-search-submit').click();
-                    }
-                });
+                    map = new kakao.maps.Map(mapContainer, mapOption);
+                    mapPs = new kakao.maps.services.Places();
+                    mapCustomOverlay = new kakao.maps.CustomOverlay({
+                        clickable: true
+                    });
+
+                    // 기본 지역인 "강남역"으로 자동 지도 로드 및 검색
+                    document.getElementById('map-search-keyword').value = '강남역';
+                    searchGyms('강남역 헬스장');
+
+                    // 지도가 드래그 이동하거나 확대/축소되어 멈췄을 때(idle 상태) 현재 화면 영역 내 헬스장 재검색
+                    kakao.maps.event.addListener(map, 'idle', () => {
+                        if (isPanningToPlace) {
+                            isPanningToPlace = false; // 카드를 클릭했거나 검색으로 지도가 움직인 경우 무시
+                            return;
+                        }
+                        searchGymsInBounds();
+                    });
+
+                    // 헬스장 검색 버튼 이벤트 등록
+                    document.getElementById('map-search-submit').addEventListener('click', () => {
+                        const keyword = document.getElementById('map-search-keyword').value.trim();
+                        if (!keyword) {
+                            alert('검색할 지역명을 입력해 주세요.');
+                            return;
+                        }
+                        searchGyms(keyword + ' 헬스장');
+                    });
+
+                    // 검색창 Enter 키 이벤트 등록
+                    document.getElementById('map-search-keyword').addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            document.getElementById('map-search-submit').click();
+                        }
+                    });
+                } catch (error) {
+                    console.error("Kakao Map Init Error:", error);
+                    mapContainer.innerHTML = `
+                        <div style="padding: 2rem; color: #ff6b6b; font-size: 0.95rem; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #161b22; border: 1px dashed var(--error); border-radius: 15px;">
+                            <i class="fas fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 1rem; color: var(--error);"></i>
+                            <strong>지도 로드 오류 발생</strong>
+                            <p style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; max-width: 90%;">${error.message}</p>
+                            <span style="margin-top: 1rem; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; border-radius: 5px;">현재 접속 주소: ${window.location.origin}</span>
+                        </div>
+                    `;
+                    document.getElementById('map-places-list').innerHTML = `
+                        <div class="map-no-results" style="color: #ff6b6b;">
+                            지도 초기화 실패로 인해 헬스장 검색 기능을 사용할 수 없습니다.
+                        </div>
+                    `;
+                }
             }
 
             // file 프로토콜 및 SDK 검색 에러 대응을 위한 통합 검색 함수 (REST API)
