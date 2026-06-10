@@ -1308,6 +1308,254 @@
             color: var(--accent);
             font-weight: 500;
         }
+
+        /* 루틴 운동 체크 상태 */
+        .exercise-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+
+        .exercise-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--primary);
+        }
+
+        .exercise-item.completed {
+            opacity: 0.4;
+            text-decoration: line-through;
+            background: rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .exercise-item.completed .exercise-name {
+            color: var(--text-muted);
+        }
+
+        .exercise-check-icon {
+            margin-right: 0.8rem;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .exercise-item.completed .exercise-check-icon {
+            color: var(--primary);
+        }
+
+        /* 캘린더 대시보드 */
+        .calendar-container {
+            margin-top: 3rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .calendar-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .calendar-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .calendar-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .calendar-btn-group {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .calendar-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.4rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .calendar-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .calendar-grid-header, .calendar-grid-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .calendar-grid-header {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .calendar-day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            font-size: 0.95rem;
+            position: relative;
+            background: rgba(255, 255, 255, 0.01);
+            transition: var(--transition);
+        }
+
+        .calendar-day-cell.other-month {
+            opacity: 0.2;
+        }
+
+        .calendar-day-cell.today {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(0, 242, 255, 0.2);
+            font-weight: 700;
+        }
+
+        .calendar-day-cell.completed {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.2);
+        }
+
+        .calendar-day-cell.completed::after {
+            content: '✔';
+            position: absolute;
+            bottom: 4px;
+            font-size: 0.65rem;
+            color: var(--accent);
+        }
+
+        .today-log-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .log-today-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--text-main);
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(112, 0, 255, 0.3);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .log-today-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 242, 255, 0.5);
+        }
+
+        .log-today-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* 오운완 인증 모달 */
+        .share-modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            position: relative;
+            border: 1px solid var(--border);
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .share-card-preview-wrapper {
+            margin: 1.5rem 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 인증 카드용 캔버스 숨김 */
+        #share-card-canvas {
+            display: none;
+        }
+
+        .share-card-preview-img {
+            max-width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .share-action-btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        /* 파티클 효과용 스타일 */
+        .confetti-particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1450,6 +1698,29 @@
                     <div id="weekly-routine" class="weekly-grid"></div>
                 </div>
 
+                <!-- 나의 오운완 기록 달력 -->
+                <div class="calendar-container">
+                    <h3><i class="fas fa-calendar-check"></i> 📅 나의 오운완 기록 달력</h3>
+                    <div class="calendar-card">
+                        <div class="calendar-header-row">
+                            <button type="button" id="prev-month-btn" class="calendar-btn"><i class="fas fa-chevron-left"></i> 이전 달</button>
+                            <span id="calendar-month-title" class="calendar-title">2026년 6월</span>
+                            <button type="button" id="next-month-btn" class="calendar-btn">다음 달 <i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-grid-header">
+                            <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+                        </div>
+                        <div id="calendar-grid-body" class="calendar-grid-body">
+                            <!-- 달력 날짜 셀들이 동적으로 렌더링됩니다 -->
+                        </div>
+                        <div class="today-log-btn-container">
+                            <button type="button" id="log-today-btn" class="log-today-btn">
+                                <i class="fas fa-circle-check"></i> 오늘 운동 완료! 🎉
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 맞춤형 유산소 처방 섹션 -->
                 <div class="cardio-container">
                     <h3><i class="fas fa-running"></i> 🏃 나만의 맞춤 유산소 처방전</h3>
@@ -1519,6 +1790,27 @@
                     <strong>💡 안전 팁:</strong>
                     <p id="modal-tip">부상 방지를 위한 팁입니다.</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 오운완 인증 모달 -->
+    <div id="share-modal" class="modal hidden">
+        <div class="share-modal-content">
+            <span class="close-modal" id="close-share-modal">&times;</span>
+            <h2 style="font-size: 1.5rem; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;"><i class="fas fa-trophy"></i> 오늘 운동 완료!</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">멋진 인증 카드가 실시간 생성되었습니다.</p>
+            
+            <div class="share-card-preview-wrapper">
+                <canvas id="share-card-canvas" width="400" height="500"></canvas>
+                <img id="share-card-preview-img" class="share-card-preview-img" alt="오운완 인증 카드 미리보기">
+            </div>
+            
+            <div class="share-action-btn-group">
+                <button type="button" id="download-card-btn" class="btn next-btn">
+                    <i class="fas fa-download"></i> 이미지 저장하기
+                </button>
+                <button type="button" id="close-share-modal-btn" class="btn prev-btn">닫기</button>
             </div>
         </div>
     </div>
@@ -1618,6 +1910,13 @@
             }
         ];
 
+        // 전역 상태 변수들 (오운완 인증 카드 생성용)
+        let currentBmi = 22.5;
+        let currentCal = 450;
+        let currentExercises = [];
+        let currentGoal = 'diet';
+        let calendarDate = new Date(); // 달력 현재 날짜 기준
+
         document.addEventListener('DOMContentLoaded', () => {
             // 카카오 지도 관련 상태 변수
             let map = null;
@@ -1636,6 +1935,15 @@
             const formSection = document.getElementById('form-section');
             const modal = document.getElementById('exercise-modal');
             const closeModal = document.querySelector('.close-modal');
+
+            // 캘린더 및 인증 모달 엘리먼트
+            const shareModal = document.getElementById('share-modal');
+            const closeShareModal = document.getElementById('close-share-modal');
+            const closeShareModalBtn = document.getElementById('close-share-modal-btn');
+            const downloadCardBtn = document.getElementById('download-card-btn');
+            const logTodayBtn = document.getElementById('log-today-btn');
+            const prevMonthBtn = document.getElementById('prev-month-btn');
+            const nextMonthBtn = document.getElementById('next-month-btn');
 
             let currentStep = 0;
 
@@ -1748,11 +2056,21 @@
                     return !ex.injuryAvoid.some(injury => data.injuries.includes(injury));
                 });
 
+                // 전역 변수 업데이트 (공유 카드 캔버스로 인쇄용)
+                currentBmi = bmi;
+                currentCal = estimatedCal;
+                currentExercises = availableExercises.map(e => e.name);
+                currentGoal = data.goal;
+
                 const routine = generateWeeklySchedule(data.frequency, availableExercises);
                 renderRoutine(routine);
                 renderSupplements(data);
                 renderCardioPrescription(data, bmi);
                 renderDietPrescription(data, bmi);
+                
+                // 캘린더 초기화 및 렌더링
+                renderCalendar();
+
                 formSection.classList.add('hidden');
                 resultSection.classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1799,12 +2117,319 @@
                     let exercisesHtml = dayInfo.rest ? '<div class="exercise-list"><p class="text-muted">충분한 휴식을 취하세요.</p></div>' : '<div class="exercise-list">';
                     if (!dayInfo.rest) {
                         dayInfo.exercises.forEach(ex => {
-                            exercisesHtml += `<div class="exercise-item" onclick="openExerciseModal(${ex.id})"><span class="exercise-name">${ex.name}</span><span class="exercise-meta">3세트 x 12회</span></div>`;
+                            exercisesHtml += `
+                                <div class="exercise-item" data-ex-id="${ex.id}">
+                                    <div style="display: flex; align-items: center;" onclick="toggleExerciseCheck(this, event)">
+                                        <i class="far fa-circle exercise-check-icon" style="font-size: 1.1rem; cursor: pointer;"></i>
+                                        <span class="exercise-name" style="cursor: pointer;">${ex.name}</span>
+                                    </div>
+                                    <span class="exercise-meta" onclick="openExerciseModal(${ex.id})" style="cursor: pointer; color: var(--primary); text-decoration: underline;">
+                                        3세트 x 12회 <i class="fas fa-circle-play" style="font-size: 0.8rem; margin-left: 0.2rem;"></i>
+                                    </span>
+                                </div>`;
                         });
                         exercisesHtml += '</div>';
                     }
                     dayCard.innerHTML = `<div class="day-header ${dayInfo.rest ? 'rest' : ''}"><span>${dayInfo.day}</span><span>${dayInfo.rest ? '<i class="fas fa-bed"></i>' : '<i class="fas fa-running"></i>'}</span></div>${exercisesHtml}`;
                     container.appendChild(dayCard);
+                });
+            }
+
+            // 운동 리스트 체크 표시 토글
+            window.toggleExerciseCheck = function(elem, event) {
+                event.stopPropagation();
+                const item = elem.closest('.exercise-item');
+                const icon = item.querySelector('.exercise-check-icon');
+                item.classList.toggle('completed');
+                
+                if (item.classList.contains('completed')) {
+                    icon.className = 'fas fa-circle-check exercise-check-icon';
+                } else {
+                    icon.className = 'far fa-circle exercise-check-icon';
+                }
+            };
+
+            // 캘린더 및 오운완 기록 비즈니스 로직
+            function getCompletedDates() {
+                const logs = localStorage.getItem('fit_script_completed_dates');
+                return logs ? JSON.parse(logs) : [];
+            }
+
+            function getTodayString() {
+                const d = new Date();
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const date = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${date}`;
+            }
+
+            function renderCalendar() {
+                const title = document.getElementById('calendar-month-title');
+                const gridBody = document.getElementById('calendar-grid-body');
+                if (!gridBody) return;
+
+                gridBody.innerHTML = '';
+                
+                const year = calendarDate.getFullYear();
+                const month = calendarDate.getMonth();
+                title.innerText = `${year}년 ${month + 1}월`;
+
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                
+                const startDayOfWeek = firstDay.getDay();
+                const totalDays = lastDay.getDate();
+                const prevLastDay = new Date(year, month, 0).getDate();
+
+                const completedDates = getCompletedDates();
+                const todayStr = getTodayString();
+
+                // 이전 달 날짜 채우기
+                for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-day-cell other-month';
+                    cell.innerText = prevLastDay - i;
+                    gridBody.appendChild(cell);
+                }
+
+                // 이번 달 날짜 채우기
+                for (let d = 1; d <= totalDays; d++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-day-cell';
+                    cell.innerText = d;
+
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    
+                    if (dateStr === todayStr) {
+                        cell.classList.add('today');
+                    }
+
+                    if (completedDates.includes(dateStr)) {
+                        cell.classList.add('completed');
+                    }
+
+                    gridBody.appendChild(cell);
+                }
+
+                // 다음 달 날짜 채우기
+                const currentCellsCount = startDayOfWeek + totalDays;
+                const nextDaysNeeded = (7 - (currentCellsCount % 7)) % 7;
+                for (let i = 1; i <= nextDaysNeeded; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-day-cell other-month';
+                    cell.innerText = i;
+                    gridBody.appendChild(cell);
+                }
+            }
+
+            function createConfetti() {
+                const colors = ['#00f2ff', '#7000ff', '#afff00', '#ff007f', '#ffaa00'];
+                for (let i = 0; i < 50; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'confetti-particle';
+                    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    p.style.left = Math.random() * 100 + 'vw';
+                    const size = Math.random() * 6 + 6;
+                    p.style.width = size + 'px';
+                    p.style.height = size + 'px';
+                    
+                    // 파티클별 낙하 딜레이 및 회전 효과 부여
+                    p.style.animationDelay = Math.random() * 0.5 + 's';
+                    p.style.animationDuration = Math.random() * 1.5 + 1.5 + 's';
+                    
+                    document.body.appendChild(p);
+
+                    setTimeout(() => {
+                        p.remove();
+                    }, 3000);
+                }
+            }
+
+            window.logTodayWorkout = function() {
+                const todayStr = getTodayString();
+                const completed = getCompletedDates();
+                
+                if (completed.includes(todayStr)) {
+                    openShareModal();
+                    return;
+                }
+
+                completed.push(todayStr);
+                localStorage.setItem('fit_script_completed_dates', JSON.stringify(completed));
+                
+                createConfetti();
+                renderCalendar();
+                setTimeout(() => {
+                    openShareModal();
+                }, 500);
+            };
+
+            function openShareModal() {
+                const canvas = document.getElementById('share-card-canvas');
+                const previewImg = document.getElementById('share-card-preview-img');
+                if (!canvas || !previewImg || !shareModal) return;
+
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+
+                // 1. 다크 네온 배경 그라데이션
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+                bgGrad.addColorStop(0, '#0a0e14');
+                bgGrad.addColorStop(1, '#161b22');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, width, height);
+
+                // 바깥 아웃라인 장식
+                ctx.strokeStyle = '#00f2ff';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(10, 10, width - 20, height - 20);
+
+                const accentGrad = ctx.createLinearGradient(0, 0, width, 0);
+                accentGrad.addColorStop(0, '#00f2ff');
+                accentGrad.addColorStop(1, '#7000ff');
+                ctx.strokeStyle = accentGrad;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(15, 15, width - 30, height - 30);
+
+                // 2. 헤더 문구
+                ctx.fillStyle = '#f0f6fc';
+                ctx.font = 'bold 22px Noto Sans KR, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡ 오늘 운동 완료 (오운완)', width / 2, 65);
+
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+                const todayFormatted = new Date().toLocaleDateString('ko-KR', dateOptions);
+                ctx.fillStyle = '#8b949e';
+                ctx.font = '13px Noto Sans KR, sans-serif';
+                ctx.fillText(todayFormatted, width / 2, 95);
+
+                // 3. 중앙 카드 바디 효과 (둥근 사각형)
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.lineWidth = 1;
+                roundRect(ctx, 40, 125, width - 80, 265, 16, true, true);
+
+                // 4. 정보 텍스트 렌더링
+                ctx.fillStyle = '#afff00';
+                ctx.font = 'bold 16px Noto Sans KR, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('💪 오늘의 루틴 요약', 60, 160);
+
+                ctx.fillStyle = '#f0f6fc';
+                ctx.font = '14px Noto Sans KR, sans-serif';
+                
+                let goalText = '건강 유지';
+                if (currentGoal === 'diet') goalText = '체중 감량 (Diet)';
+                else if (currentGoal === 'strength') goalText = '근력 증진 (Strength)';
+
+                ctx.fillText(`• 목표: ${goalText}`, 60, 195);
+                ctx.fillText(`• 소모 칼로리: ${currentCal} kcal`, 60, 225);
+                ctx.fillText(`• 나의 체질량지수 (BMI): ${currentBmi}`, 60, 255);
+
+                ctx.fillStyle = '#8b949e';
+                ctx.font = 'bold 13px Noto Sans KR, sans-serif';
+                ctx.fillText('📋 수행 완료한 운동 목록:', 60, 290);
+
+                ctx.fillStyle = '#f0f6fc';
+                ctx.font = '12px Noto Sans KR, sans-serif';
+                
+                const showExs = currentExercises.slice(0, 3);
+                if (showExs.length > 0) {
+                    showExs.forEach((exName, index) => {
+                        ctx.fillText(`- ${exName} (3세트 수행 완료)`, 70, 318 + (index * 20));
+                    });
+                    if (currentExercises.length > 3) {
+                        ctx.fillText(`- 외 ${currentExercises.length - 3}개 종목 완료`, 70, 318 + (3 * 20));
+                    }
+                } else {
+                    ctx.fillText(`- 추천 운동 루틴 수행 완료`, 70, 318);
+                }
+
+                // 5. 하단 풋터 로고
+                ctx.fillStyle = '#00f2ff';
+                ctx.font = 'bold 18px Noto Sans KR, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Fit Script', width / 2, 440);
+
+                ctx.fillStyle = '#8b949e';
+                ctx.font = '10px Noto Sans KR, sans-serif';
+                ctx.fillText('당신을 위한 최적의 안전 운동 가이드', width / 2, 460);
+
+                previewImg.src = canvas.toDataURL('image/png');
+                shareModal.classList.remove('hidden');
+            }
+
+            function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+                if (typeof radius === 'undefined') radius = 5;
+                if (typeof radius === 'number') {
+                    radius = {tl: radius, tr: radius, br: radius, bl: radius};
+                } else {
+                    var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+                    for (var side in defaultRadius) {
+                        radius[side] = radius[side] || defaultRadius[side];
+                    }
+                }
+                ctx.beginPath();
+                ctx.moveTo(x + radius.tl, y);
+                ctx.lineTo(x + width - radius.tr, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+                ctx.lineTo(x + width, y + height - radius.br);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+                ctx.lineTo(x + radius.bl, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+                ctx.lineTo(x, y + radius.tl);
+                ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+                ctx.closePath();
+                if (fill) ctx.fill();
+                if (stroke) ctx.stroke();
+            }
+
+            window.downloadShareCard = function() {
+                const canvas = document.getElementById('share-card-canvas');
+                if (!canvas) return;
+                
+                const link = document.createElement('a');
+                link.download = 'oh-un-wan.png';
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            // 캘린더 버튼 이벤트 바인딩
+            if (prevMonthBtn) {
+                prevMonthBtn.addEventListener('click', () => {
+                    calendarDate.setMonth(calendarDate.getMonth() - 1);
+                    renderCalendar();
+                });
+            }
+            if (nextMonthBtn) {
+                nextMonthBtn.addEventListener('click', () => {
+                    calendarDate.setMonth(calendarDate.getMonth() + 1);
+                    renderCalendar();
+                });
+            }
+            if (logTodayBtn) {
+                logTodayBtn.addEventListener('click', () => {
+                    logTodayWorkout();
+                });
+            }
+
+            // 오운완 모달 제어
+            if (closeShareModal) {
+                closeShareModal.addEventListener('click', () => {
+                    shareModal.classList.add('hidden');
+                });
+            }
+            if (closeShareModalBtn) {
+                closeShareModalBtn.addEventListener('click', () => {
+                    shareModal.classList.add('hidden');
+                });
+            }
+            if (downloadCardBtn) {
+                downloadCardBtn.addEventListener('click', () => {
+                    downloadShareCard();
                 });
             }
 
